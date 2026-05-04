@@ -67,13 +67,13 @@ button {
 }
 
 .brand-logo-large {
-  height: clamp(92px, 12vw, 158px);
-  margin-left: -18px;
+  height: clamp(140px, 17vw, 230px);
+  margin-left: -26px;
 }
 
 .brand-logo-header {
-  height: 60px;
-  margin: -10px 0 8px -8px;
+  height: 98px;
+  margin: -18px 0 10px -14px;
 }
 
 .landing-text {
@@ -462,8 +462,8 @@ h2 {
 
 .card-logo {
   display: block;
-  width: 86px;
-  height: 36px;
+  width: 142px;
+  height: 58px;
   object-fit: contain;
   object-position: left center;
   mix-blend-mode: multiply;
@@ -809,13 +809,13 @@ h2 {
   }
 
   .brand-logo-large {
-    height: clamp(82px, 24vw, 118px);
-    margin-left: -12px;
+    height: clamp(120px, 34vw, 170px);
+    margin-left: -18px;
   }
 
   .brand-logo-header {
-    height: 50px;
-    margin: -8px 0 6px -7px;
+    height: 78px;
+    margin: -14px 0 8px -11px;
   }
 
   .landing-actions {
@@ -914,8 +914,8 @@ h2 {
   }
 
   .card-logo {
-    width: 74px;
-    height: 30px;
+    width: 118px;
+    height: 46px;
   }
 }
 
@@ -953,7 +953,7 @@ h2 {
   }
 
   .card-logo {
-    width: 66px;
+    width: 104px;
   }
 
   .prompt {
