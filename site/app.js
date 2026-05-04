@@ -28,6 +28,7 @@ const els = {
   passCard: document.querySelector("#passCard"),
   roulettePack: document.querySelector("#roulettePack"),
   roulettePlayers: document.querySelector("#roulettePlayers"),
+  roulettePanel: document.querySelector("#roulettePanel"),
   rouletteWheel: document.querySelector("#rouletteWheel"),
   spinBottle: document.querySelector("#spinBottle"),
   rouletteResult: document.querySelector("#rouletteResult"),
@@ -483,6 +484,7 @@ function renderRound() {
     ? state.mode.sequence[state.sequenceIndex % state.mode.sequence.length]
     : "Free draw";
   els.modeNote.textContent = state.mode.note;
+  els.roulettePanel.hidden = state.mode.id !== "roulette";
 }
 
 function renderHistory() {

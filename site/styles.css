@@ -491,6 +491,10 @@ h2 {
   background: rgba(255, 255, 255, 0.38);
 }
 
+.roulette-panel[hidden] {
+  display: none;
+}
+
 .roulette-copy span {
   display: block;
   color: var(--clay);
