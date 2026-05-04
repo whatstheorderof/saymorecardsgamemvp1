@@ -462,8 +462,8 @@ h2 {
 
 .card-logo {
   display: block;
-  width: 142px;
-  height: 58px;
+  width: 250px;
+  height: 110px;
   object-fit: contain;
   object-position: left center;
   mix-blend-mode: multiply;
@@ -914,8 +914,8 @@ h2 {
   }
 
   .card-logo {
-    width: 118px;
-    height: 46px;
+    width: 178px;
+    height: 78px;
   }
 }
 
@@ -953,7 +953,8 @@ h2 {
   }
 
   .card-logo {
-    width: 104px;
+    width: 150px;
+    height: 66px;
   }
 
   .prompt {
