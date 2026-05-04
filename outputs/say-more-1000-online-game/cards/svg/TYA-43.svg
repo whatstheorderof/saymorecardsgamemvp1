@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="630" viewBox="0 0 450 630">
+  <rect width="450" height="630" rx="34" fill="#3CA893"/>
+  <rect x="24" y="24" width="402" height="582" rx="26" fill="#EFFAF7" opacity="0.94"/>
+  <path d="M60 80 C130 40 210 116 286 74 C344 42 382 70 402 104" fill="none" stroke="#A9D8CF" stroke-width="3" opacity=".68"/>
+  <path d="M225,78 L232,96 L251,102 L232,108 L225,126 L218,108 L199,102 L218,96 Z" fill="none" stroke="#197466" stroke-width="3" stroke-linejoin="round"/>
+  <text x="56" y="66" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2" fill="#197466">TEENS &amp; YOUNG ADULTS</text>
+  <text x="394" y="66" text-anchor="end" font-family="Arial, sans-serif" font-size="15" fill="#197466">TYA-43</text>
+  <text x="225" y="301.0" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#143B35">What is one truth you</text>
+<text x="225" y="332.0" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#143B35">are ready to defend?</text>
+  <line x1="75" y1="520" x2="375" y2="520" stroke="#A9D8CF" stroke-width="2"/>
+  <text x="225" y="558" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#143B35">Say More</text>
+  <text x="225" y="582" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" letter-spacing="1.4" fill="#197466">A conversation game for closing the distance.</text>
+</svg>

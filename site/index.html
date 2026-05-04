@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Say More</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section class="landing" id="home">
+      <div class="landing-copy">
+        <p class="eyebrow">Say More</p>
+        <h1>A conversation game for closing the distance.</h1>
+        <p class="landing-text">
+          A 1,050-card online deck for dates, friends, families, teams, communities, healing, creators, life transitions, and guided conversations.
+        </p>
+        <div class="landing-actions">
+          <button class="primary-button" id="startGame" type="button">Start Playing</button>
+          <button class="secondary-button" id="randomStart" type="button">Shuffle First Card</button>
+          <button class="secondary-button" id="datesStart" type="button">Date Packs</button>
+        </div>
+      </div>
+      <div class="landing-visual" aria-hidden="true">
+        <div class="hero-card hero-card-one">
+          <span>On Camera</span>
+          <strong>What do you want strangers to remember about your humanity?</strong>
+        </div>
+        <div class="hero-card hero-card-two">
+          <span>After Dark</span>
+          <strong>What feels easier to admit at night?</strong>
+        </div>
+        <div class="hero-card hero-card-three">
+          <span>Creative Minds</span>
+          <strong>What idea will not leave you alone?</strong>
+        </div>
+      </div>
+    </section>
+
+    <main class="app-shell" id="game">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Say More</p>
+          <h1>A conversation game for closing the distance.</h1>
+        </div>
+        <div class="library-stats" aria-label="Card library stats">
+          <span><strong id="totalCards">1050</strong> cards</span>
+          <span><strong id="activeCards">0</strong> active</span>
+          <span><strong id="seenCards">0</strong> seen</span>
+        </div>
+      </header>
+
+      <section class="game-grid">
+        <aside class="control-panel" aria-label="Game setup">
+          <div class="panel-group">
+            <h2>Mode</h2>
+            <div class="mode-grid" id="modeGrid"></div>
+          </div>
+
+          <div class="panel-group">
+            <h2>Sets</h2>
+            <div class="chip-grid" id="setFilters"></div>
+          </div>
+
+          <div class="panel-group">
+            <h2>Depth</h2>
+            <div class="chip-grid compact" id="depthFilters"></div>
+          </div>
+        </aside>
+
+        <section class="play-table" aria-live="polite">
+          <div class="table-actions">
+            <button class="secondary-button" id="previousCard" type="button">Previous</button>
+            <button class="primary-button" id="drawCard" type="button">Draw Card</button>
+            <button class="secondary-button shuffle-button" id="shuffleCard" type="button">Shuffle</button>
+            <button class="secondary-button" id="resetDeck" type="button">Reset</button>
+          </div>
+
+          <article class="card-stage">
+            <div class="card-face" id="cardFace">
+              <div class="card-meta">
+                <span id="cardCategory">Ready</span>
+                <span id="cardId">SM-300</span>
+              </div>
+              <div class="thread-mark" aria-hidden="true"></div>
+              <p class="prompt" id="cardPrompt">Choose a mode, then draw the first card.</p>
+              <div class="card-footer">
+                <span>Say More</span>
+                <span id="cardSet">Full Library</span>
+              </div>
+            </div>
+          </article>
+
+          <div class="share-row">
+            <button class="secondary-button" id="copyCard" type="button">Copy Card</button>
+            <button class="secondary-button" id="copyLink" type="button">Copy Link</button>
+            <button class="secondary-button" id="passCard" type="button">Pass</button>
+          </div>
+        </section>
+
+        <aside class="side-panel" aria-label="Round information">
+          <div class="panel-group">
+            <h2>Round</h2>
+            <div class="round-box">
+              <span id="modeName">Full Library</span>
+              <strong id="roundCue">Free draw</strong>
+              <p id="modeNote">All sets are available.</p>
+            </div>
+          </div>
+
+          <div class="panel-group">
+            <h2>Categories</h2>
+            <div class="chip-grid" id="categoryFilters"></div>
+          </div>
+
+          <div class="panel-group history-group">
+            <h2>History</h2>
+            <ol class="history-list" id="historyList"></ol>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="cards.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

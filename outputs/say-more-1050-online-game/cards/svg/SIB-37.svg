@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="630" viewBox="0 0 450 630">
+  <rect width="450" height="630" rx="34" fill="#A3B687"/>
+  <rect x="24" y="24" width="402" height="582" rx="26" fill="#F7F2DF" opacity="0.94"/>
+  <path d="M60 80 C130 40 210 116 286 74 C344 42 382 70 402 104" fill="none" stroke="#D6DEC5" stroke-width="3" opacity=".68"/>
+  <path d="M201,118 C217,82 233,82 249,118" fill="none" stroke="#6E7D55" stroke-width="3" stroke-linecap="round"/>
+  <text x="56" y="66" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2" fill="#6E7D55">SIBLINGS</text>
+  <text x="394" y="66" text-anchor="end" font-family="Arial, sans-serif" font-size="15" fill="#6E7D55">SIB-37</text>
+  <text x="225" y="301.0" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#29261F">What apology would help</text>
+<text x="225" y="332.0" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#29261F">us breathe easier?</text>
+  <line x1="75" y1="520" x2="375" y2="520" stroke="#D6DEC5" stroke-width="2"/>
+  <text x="225" y="558" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#29261F">Say More</text>
+  <text x="225" y="582" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" letter-spacing="1.4" fill="#6E7D55">A conversation game for closing the distance.</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="630" viewBox="0 0 450 630">
+  <rect width="450" height="630" rx="34" fill="#2C2925"/>
+  <rect x="24" y="24" width="402" height="582" rx="26" fill="#F5EBDD"/>
+  <path d="M74 154 C154 72 254 236 366 118" fill="none" stroke="#2E746D" stroke-width="5" stroke-linecap="round"/>
+  <path d="M78 448 C170 350 280 530 374 412" fill="none" stroke="#C7795B" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="225" cy="315" r="86" fill="none" stroke="#57322B" stroke-width="4"/>
+  <text x="225" y="300" text-anchor="middle" font-family="Georgia, serif" font-size="54" fill="#2C2925">Say</text>
+  <text x="225" y="358" text-anchor="middle" font-family="Georgia, serif" font-size="54" fill="#2C2925">More</text>
+  <text x="225" y="492" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" letter-spacing="1.6" fill="#57322B">A conversation game for closing the distance.</text>
+</svg>
