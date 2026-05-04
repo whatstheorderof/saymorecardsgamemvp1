@@ -20,11 +20,17 @@ const els = {
   cardSet: document.querySelector("#cardSet"),
   drawCard: document.querySelector("#drawCard"),
   shuffleCard: document.querySelector("#shuffleCard"),
+  rouletteCard: document.querySelector("#rouletteCard"),
   previousCard: document.querySelector("#previousCard"),
   resetDeck: document.querySelector("#resetDeck"),
   copyCard: document.querySelector("#copyCard"),
   copyLink: document.querySelector("#copyLink"),
   passCard: document.querySelector("#passCard"),
+  roulettePack: document.querySelector("#roulettePack"),
+  roulettePlayers: document.querySelector("#roulettePlayers"),
+  rouletteWheel: document.querySelector("#rouletteWheel"),
+  spinBottle: document.querySelector("#spinBottle"),
+  rouletteResult: document.querySelector("#rouletteResult"),
   modeName: document.querySelector("#modeName"),
   roundCue: document.querySelector("#roundCue"),
   modeNote: document.querySelector("#modeNote"),
@@ -41,6 +47,14 @@ const modes = [
     id: "full",
     name: "Full Library",
     note: "All sets are available.",
+    sets: allSets,
+    categories: allCategories,
+    depths,
+  },
+  {
+    id: "roulette",
+    name: "Roulette",
+    note: "Let the deck choose the direction: full-library spins and pack-based turns.",
     sets: allSets,
     categories: allCategories,
     depths,
@@ -251,6 +265,7 @@ const state = {
   current: null,
   sequenceIndex: 0,
   isShuffling: false,
+  rouletteAngle: -28,
 };
 
 function cleanClass(value) {
@@ -304,6 +319,16 @@ function drawCard({ skipSequence = false } = {}) {
   displayCard(card, { pushHistory: true });
 }
 
+function drawFromCards(list, { pushHistory = true } = {}) {
+  if (!list.length) {
+    showToast("No cards match those filters.");
+    return null;
+  }
+  const card = pickRandom(unseenFrom(list));
+  displayCard(card, { pushHistory });
+  return card;
+}
+
 function previewCard(card) {
   els.cardFace.className = `card-face category-${cleanClass(card.category)} is-shuffling`;
   els.cardCategory.textContent = card.category;
@@ -337,9 +362,11 @@ function setShuffleControls(disabled) {
   state.isShuffling = disabled;
   els.drawCard.disabled = disabled;
   els.shuffleCard.disabled = disabled;
+  els.rouletteCard.disabled = disabled;
   els.passCard.disabled = disabled;
   els.previousCard.disabled = disabled;
   els.resetDeck.disabled = disabled;
+  els.spinBottle.disabled = disabled;
   els.cardFace.setAttribute("aria-busy", String(disabled));
 }
 
@@ -364,6 +391,32 @@ async function shuffleRandomCard() {
   setShuffleControls(false);
   displayCard(finalCard, { pushHistory: true });
   showToast("Random card selected");
+}
+
+async function rouletteRandomCard() {
+  if (state.isShuffling) return;
+  const available = cards;
+  if (!available.length) return;
+
+  const rouletteMode = modes.find((item) => item.id === "roulette") || modes[0];
+  setMode(rouletteMode, { silent: true });
+  setShuffleControls(true);
+  els.rouletteWheel.classList.add("is-spinning");
+  state.rouletteAngle += 720 + Math.floor(Math.random() * 540);
+  els.rouletteWheel.style.setProperty("--spin-angle", `${state.rouletteAngle}deg`);
+
+  const finalCard = pickRandom(unseenFrom(available));
+  for (let i = 0; i < 18; i += 1) {
+    previewCard(pickRandom(available));
+    await sleep(34 + i * 6);
+  }
+
+  await sleep(220);
+  els.rouletteWheel.classList.remove("is-spinning");
+  setShuffleControls(false);
+  displayCard(finalCard, { pushHistory: true });
+  els.rouletteResult.textContent = `Roulette picked ${finalCard.set}.`;
+  showToast("Roulette card selected");
 }
 
 function renderStats() {
@@ -413,6 +466,17 @@ function renderFilters() {
   });
 }
 
+function renderRoulettePacks() {
+  els.roulettePack.replaceChildren(
+    ...allSets.map((set) => {
+      const option = document.createElement("option");
+      option.value = set;
+      option.textContent = set;
+      return option;
+    }),
+  );
+}
+
 function renderRound() {
   els.modeName.textContent = state.mode.name;
   els.roundCue.textContent = state.mode.sequence?.length
@@ -452,14 +516,14 @@ function toggleSet(set, value) {
   }
 }
 
-function setMode(mode) {
+function setMode(mode, { silent = false } = {}) {
   state.mode = mode;
   state.selectedSets = new Set(mode.sets);
   state.selectedCategories = new Set(mode.categories);
   state.selectedDepths = new Set(mode.depths);
   state.sequenceIndex = 0;
   renderAll();
-  showToast(`${mode.name} mode`);
+  if (!silent) showToast(`${mode.name} mode`);
 }
 
 function scrollToGame() {
@@ -488,6 +552,49 @@ function previousCard() {
   displayCard(previous);
 }
 
+function getRoulettePlayers() {
+  const players = els.roulettePlayers.value
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+  return players.length ? players : ["Player 1"];
+}
+
+async function spinBottle() {
+  if (state.isShuffling) return;
+  const players = getRoulettePlayers();
+  const set = els.roulettePack.value || allSets[0];
+  const packCards = cards.filter((card) => card.set === set);
+  if (!packCards.length) {
+    showToast("That pack has no cards.");
+    return;
+  }
+
+  const chosenIndex = Math.floor(Math.random() * players.length);
+  const segment = 360 / players.length;
+  const targetAngle = 360 * 4 + chosenIndex * segment + Math.random() * Math.max(18, segment * 0.7);
+  state.rouletteAngle += targetAngle;
+
+  setShuffleControls(true);
+  els.rouletteResult.textContent = "Spinning...";
+  els.rouletteWheel.classList.add("is-spinning");
+  els.rouletteWheel.style.setProperty("--spin-angle", `${state.rouletteAngle}deg`);
+
+  const previews = Math.min(12, Math.max(6, packCards.length));
+  for (let i = 0; i < previews; i += 1) {
+    previewCard(pickRandom(packCards));
+    await sleep(48 + i * 8);
+  }
+
+  await sleep(520);
+  const card = drawFromCards(packCards);
+  const player = players[chosenIndex];
+  els.rouletteWheel.classList.remove("is-spinning");
+  setShuffleControls(false);
+  els.rouletteResult.textContent = `${player} answers next from ${set}.`;
+  if (card) showToast(`${player} is up`);
+}
+
 function resetDeck() {
   state.seen.clear();
   state.history = [];
@@ -499,6 +606,7 @@ function resetDeck() {
   els.cardId.textContent = "SM-300";
   els.cardPrompt.textContent = "Choose a mode, then draw the first card.";
   els.cardSet.textContent = "Full Library";
+  els.rouletteResult.textContent = "Add names separated by commas.";
   renderAll();
   showToast("Deck reset");
 }
@@ -551,16 +659,19 @@ function loadHashCard() {
 
 els.drawCard.addEventListener("click", () => drawCard());
 els.shuffleCard.addEventListener("click", shuffleRandomCard);
+els.rouletteCard.addEventListener("click", rouletteRandomCard);
 els.passCard.addEventListener("click", () => drawCard({ skipSequence: true }));
 els.previousCard.addEventListener("click", previousCard);
 els.resetDeck.addEventListener("click", resetDeck);
 els.copyCard.addEventListener("click", copyCurrentCard);
 els.copyLink.addEventListener("click", copyCurrentLink);
+els.spinBottle.addEventListener("click", spinBottle);
 els.startGame?.addEventListener("click", scrollToGame);
 els.randomStart?.addEventListener("click", landingShuffle);
 els.datesStart?.addEventListener("click", startDateMode);
 window.addEventListener("hashchange", loadHashCard);
 
+renderRoulettePacks();
 renderAll();
 if (loadHashCard()) {
   scrollToGame();

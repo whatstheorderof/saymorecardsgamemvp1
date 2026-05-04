@@ -73,6 +73,7 @@
             <button class="secondary-button" id="previousCard" type="button">Previous</button>
             <button class="primary-button" id="drawCard" type="button">Draw Card</button>
             <button class="secondary-button shuffle-button" id="shuffleCard" type="button">Shuffle</button>
+            <button class="secondary-button roulette-button" id="rouletteCard" type="button">Roulette</button>
             <button class="secondary-button" id="resetDeck" type="button">Reset</button>
           </div>
 
@@ -96,6 +97,28 @@
             <button class="secondary-button" id="copyLink" type="button">Copy Link</button>
             <button class="secondary-button" id="passCard" type="button">Pass</button>
           </div>
+
+          <section class="roulette-panel" aria-label="Spin the bottle mode">
+            <div class="roulette-copy">
+              <span>Roulette Mode</span>
+              <strong>Pick a pack, spin for who answers next.</strong>
+            </div>
+            <div class="roulette-wheel" id="rouletteWheel" aria-hidden="true">
+              <div class="bottle"></div>
+            </div>
+            <div class="roulette-controls">
+              <label>
+                <span>Pack</span>
+                <select id="roulettePack"></select>
+              </label>
+              <label>
+                <span>Players</span>
+                <input id="roulettePlayers" type="text" value="Player 1, Player 2, Player 3" autocomplete="off" />
+              </label>
+              <button class="primary-button" id="spinBottle" type="button">Spin Bottle</button>
+            </div>
+            <p class="roulette-result" id="rouletteResult">Add names separated by commas.</p>
+          </section>
         </section>
 
         <aside class="side-panel" aria-label="Round information">
