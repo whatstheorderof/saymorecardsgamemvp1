@@ -92,6 +92,73 @@ button {
   margin-top: 30px;
 }
 
+.session-starter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 690px;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid rgba(44, 41, 37, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 248, 238, 0.62);
+  box-shadow: 0 10px 30px rgba(39, 34, 29, 0.06);
+}
+
+.session-starter > div {
+  grid-column: 1 / -1;
+}
+
+.session-starter > div span,
+.session-starter label span {
+  display: block;
+  color: var(--clay);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.session-starter > div strong {
+  display: block;
+  margin-top: 5px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.session-starter label {
+  display: grid;
+  gap: 6px;
+}
+
+.session-starter select,
+.session-starter input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid rgba(44, 41, 37, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.56);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.session-players-field,
+.session-starter button,
+.consent-note {
+  grid-column: 1 / -1;
+}
+
+.consent-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
 .landing-visual {
   position: relative;
   min-height: 620px;
@@ -322,7 +389,7 @@ h2 {
 
 .share-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -368,6 +435,27 @@ h2 {
   place-items: center;
   min-height: 620px;
   padding: 24px 0;
+}
+
+.turn-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(46, 116, 109, 0.18);
+  border-radius: 8px;
+  background: rgba(220, 235, 230, 0.48);
+  color: var(--teal);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.mini-button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.82rem;
 }
 
 .card-face {
@@ -623,6 +711,10 @@ h2 {
   color: var(--muted);
   font-size: 0.9rem;
   line-height: 1.4;
+}
+
+.session-box strong {
+  line-height: 1.2;
 }
 
 .history-group {
@@ -954,6 +1046,10 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .session-starter {
+    grid-template-columns: 1fr;
+  }
+
   .landing-visual {
     min-height: 430px;
   }
@@ -1006,6 +1102,11 @@ h2 {
   .table-actions,
   .share-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .turn-banner {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .table-actions .primary-button {

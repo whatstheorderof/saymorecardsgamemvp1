@@ -4,6 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Say More</title>
+    <meta
+      name="description"
+      content="Say More is a guided conversation card game for dates, friends, families, teams, healing, and meaningful group play."
+    />
+    <meta property="og:title" content="Say More" />
+    <meta property="og:description" content="A guided conversation card game for closing the distance." />
     <link rel="icon" href="assets/say-more-card-logo.png" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -20,6 +26,34 @@
           <button class="secondary-button" id="randomStart" type="button">Shuffle First Card</button>
           <button class="secondary-button" id="datesStart" type="button">Date Packs</button>
         </div>
+        <section class="session-starter" aria-label="Start a Say More session">
+          <div>
+            <span>Start Session</span>
+            <strong>Set the room before the first card.</strong>
+          </div>
+          <label>
+            <span>Mode</span>
+            <select id="sessionMode"></select>
+          </label>
+          <label>
+            <span>Pack</span>
+            <select id="sessionPack"></select>
+          </label>
+          <label>
+            <span>Depth</span>
+            <select id="sessionDepth">
+              <option value="Low">Gentle</option>
+              <option value="Medium">Open</option>
+              <option value="High">Deep</option>
+            </select>
+          </label>
+          <label class="session-players-field">
+            <span>Players</span>
+            <input id="sessionPlayers" type="text" value="Player 1, Player 2" autocomplete="off" />
+          </label>
+          <button class="primary-button" id="startSession" type="button">Begin Session</button>
+          <p class="consent-note">Everyone can pass, pause, or ask for a softer card. This is a game, not crisis or therapy support.</p>
+        </section>
       </div>
       <div class="landing-visual" aria-hidden="true">
         <div class="hero-card hero-card-one">
@@ -77,6 +111,11 @@
             <button class="secondary-button" id="resetDeck" type="button">Reset</button>
           </div>
 
+          <div class="turn-banner">
+            <span id="turnPlayer">Set up players to rotate turns.</span>
+            <button class="secondary-button mini-button" id="followUpCard" type="button">Follow-up</button>
+          </div>
+
           <article class="card-stage">
             <div class="card-face" id="cardFace">
               <div class="card-meta">
@@ -96,6 +135,7 @@
             <button class="secondary-button" id="copyCard" type="button">Copy Card</button>
             <button class="secondary-button" id="copyLink" type="button">Copy Link</button>
             <button class="secondary-button" id="passCard" type="button">Pass</button>
+            <button class="secondary-button" id="softerCard" type="button">Softer Card</button>
           </div>
 
           <section class="roulette-panel" id="roulettePanel" aria-label="Spin the bottle mode" hidden>
@@ -122,6 +162,15 @@
         </section>
 
         <aside class="side-panel" aria-label="Round information">
+          <div class="panel-group">
+            <h2>Session</h2>
+            <div class="round-box session-box">
+              <span id="sessionStatus">Open table</span>
+              <strong id="sessionPlayersSummary">No players yet</strong>
+              <p id="sessionSafety">Pass, pause, or choose a softer card at any time.</p>
+            </div>
+          </div>
+
           <div class="panel-group">
             <h2>Round</h2>
             <div class="round-box">

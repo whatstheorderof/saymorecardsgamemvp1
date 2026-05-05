@@ -1,5 +1,15 @@
 const cards = window.SAY_MORE_CARDS || [];
 const counts = window.SAY_MORE_COUNTS || { bySet: {}, byCategory: {} };
+const STORAGE_KEY = "sayMoreSessionV1";
+const FOLLOW_UP_PROMPTS = [
+  "What makes you say that?",
+  "When did you first notice that?",
+  "What part of that feels most true right now?",
+  "What would help someone understand that better?",
+  "How has that changed over time?",
+  "What is the gentler version of that answer?",
+  "What do you wish people asked after hearing that?",
+];
 
 const els = {
   totalCards: document.querySelector("#totalCards"),
@@ -7,6 +17,11 @@ const els = {
   startGame: document.querySelector("#startGame"),
   randomStart: document.querySelector("#randomStart"),
   datesStart: document.querySelector("#datesStart"),
+  sessionMode: document.querySelector("#sessionMode"),
+  sessionPack: document.querySelector("#sessionPack"),
+  sessionDepth: document.querySelector("#sessionDepth"),
+  sessionPlayers: document.querySelector("#sessionPlayers"),
+  startSession: document.querySelector("#startSession"),
   activeCards: document.querySelector("#activeCards"),
   seenCards: document.querySelector("#seenCards"),
   modeGrid: document.querySelector("#modeGrid"),
@@ -26,12 +41,18 @@ const els = {
   copyCard: document.querySelector("#copyCard"),
   copyLink: document.querySelector("#copyLink"),
   passCard: document.querySelector("#passCard"),
+  softerCard: document.querySelector("#softerCard"),
+  followUpCard: document.querySelector("#followUpCard"),
+  turnPlayer: document.querySelector("#turnPlayer"),
   roulettePack: document.querySelector("#roulettePack"),
   roulettePlayers: document.querySelector("#roulettePlayers"),
   roulettePanel: document.querySelector("#roulettePanel"),
   rouletteWheel: document.querySelector("#rouletteWheel"),
   spinBottle: document.querySelector("#spinBottle"),
   rouletteResult: document.querySelector("#rouletteResult"),
+  sessionStatus: document.querySelector("#sessionStatus"),
+  sessionPlayersSummary: document.querySelector("#sessionPlayersSummary"),
+  sessionSafety: document.querySelector("#sessionSafety"),
   modeName: document.querySelector("#modeName"),
   roundCue: document.querySelector("#roundCue"),
   modeNote: document.querySelector("#modeNote"),
@@ -264,6 +285,9 @@ const state = {
   seen: new Set(),
   history: [],
   current: null,
+  currentPlayer: "",
+  players: [],
+  playerIndex: 0,
   sequenceIndex: 0,
   isShuffling: false,
   rouletteAngle: -28,
@@ -278,6 +302,95 @@ function showToast(message) {
   els.toast.classList.add("show");
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1500);
+}
+
+function parsePlayers(value) {
+  return value
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+}
+
+function modeById(id) {
+  return modes.find((mode) => mode.id === id) || modes[0];
+}
+
+function nextPlayer() {
+  if (!state.players.length) return "";
+  const player = state.players[state.playerIndex % state.players.length];
+  state.playerIndex = (state.playerIndex + 1) % state.players.length;
+  return player;
+}
+
+function cardsForSet(set) {
+  return cards.filter((card) => card.set === set);
+}
+
+function categoriesForSet(set) {
+  return [...new Set(cardsForSet(set).map((card) => card.category))];
+}
+
+function saveSession() {
+  const payload = {
+    modeId: state.mode.id,
+    selectedSets: [...state.selectedSets],
+    selectedCategories: [...state.selectedCategories],
+    selectedDepths: [...state.selectedDepths],
+    seen: [...state.seen],
+    history: state.history.map((card) => card.id),
+    currentId: state.current?.id || "",
+    currentPlayer: state.currentPlayer,
+    players: state.players,
+    playerIndex: state.playerIndex,
+    roulettePlayers: els.roulettePlayers.value,
+    roulettePack: els.roulettePack.value,
+  };
+  try {
+    window.localStorage?.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // Local storage is optional; the game remains playable without it.
+  }
+}
+
+function restoreSession() {
+  try {
+    const raw = window.localStorage?.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    state.mode = modeById(saved.modeId);
+    state.selectedSets = new Set(saved.selectedSets?.filter((set) => allSets.includes(set)) || state.mode.sets);
+    state.selectedCategories = new Set(
+      saved.selectedCategories?.filter((category) => allCategories.includes(category)) || state.mode.categories,
+    );
+    state.selectedDepths = new Set(saved.selectedDepths?.filter((depth) => depths.includes(depth)) || state.mode.depths);
+    state.seen = new Set(saved.seen?.filter((id) => cards.some((card) => card.id === id)) || []);
+    state.history = (saved.history || []).map((id) => cards.find((card) => card.id === id)).filter(Boolean);
+    state.current = cards.find((card) => card.id === saved.currentId) || null;
+    state.currentPlayer = saved.currentPlayer || "";
+    state.players = Array.isArray(saved.players) ? saved.players.filter(Boolean) : [];
+    state.playerIndex = Number.isInteger(saved.playerIndex) ? saved.playerIndex : 0;
+    if (saved.roulettePlayers) els.roulettePlayers.value = saved.roulettePlayers;
+    if (saved.roulettePack && allSets.includes(saved.roulettePack)) els.roulettePack.value = saved.roulettePack;
+    if (state.players.length) els.sessionPlayers.value = state.players.join(", ");
+    els.sessionMode.value = state.mode.id;
+    els.sessionDepth.value = depthChoiceFromSet(state.selectedDepths);
+    els.sessionPack.value = state.selectedSets.size === 1 ? [...state.selectedSets][0] : "";
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function depthRange(choice) {
+  if (choice === "High") return ["Low", "Medium", "High"];
+  if (choice === "Medium") return ["Low", "Medium"];
+  return ["Low"];
+}
+
+function depthChoiceFromSet(set) {
+  if (set.has("High")) return "High";
+  if (set.has("Medium")) return "Medium";
+  return "Low";
 }
 
 function activeCards() {
@@ -317,16 +430,16 @@ function drawCard({ skipSequence = false } = {}) {
   }
 
   const card = pickRandom(unseenFrom(pool));
-  displayCard(card, { pushHistory: true });
+  displayCard(card, { pushHistory: true, assignee: nextPlayer() });
 }
 
-function drawFromCards(list, { pushHistory = true } = {}) {
+function drawFromCards(list, { pushHistory = true, assignee = nextPlayer() } = {}) {
   if (!list.length) {
     showToast("No cards match those filters.");
     return null;
   }
   const card = pickRandom(unseenFrom(list));
-  displayCard(card, { pushHistory });
+  displayCard(card, { pushHistory, assignee });
   return card;
 }
 
@@ -338,8 +451,17 @@ function previewCard(card) {
   els.cardSet.textContent = card.set;
 }
 
-function displayCard(card, { pushHistory = false } = {}) {
+function showReadyCard() {
+  els.cardFace.className = "card-face";
+  els.cardCategory.textContent = "Ready";
+  els.cardId.textContent = "SM-300";
+  els.cardPrompt.textContent = "Choose a mode, then draw the first card.";
+  els.cardSet.textContent = "Full Library";
+}
+
+function displayCard(card, { pushHistory = false, assignee } = {}) {
   state.current = card;
+  if (assignee !== undefined) state.currentPlayer = assignee;
   state.seen.add(card.id);
   if (pushHistory) {
     state.history = [card, ...state.history.filter((item) => item.id !== card.id)].slice(0, 12);
@@ -351,8 +473,10 @@ function displayCard(card, { pushHistory = false } = {}) {
   els.cardPrompt.textContent = card.prompt;
   els.cardSet.textContent = card.set;
   window.history.replaceState(null, "", `#${card.id}`);
+  renderTurn();
   renderStats();
   renderHistory();
+  saveSession();
 }
 
 function sleep(ms) {
@@ -390,7 +514,7 @@ async function shuffleRandomCard() {
   }
 
   setShuffleControls(false);
-  displayCard(finalCard, { pushHistory: true });
+  displayCard(finalCard, { pushHistory: true, assignee: nextPlayer() });
   showToast("Random card selected");
 }
 
@@ -415,7 +539,7 @@ async function rouletteRandomCard() {
   await sleep(220);
   els.rouletteWheel.classList.remove("is-spinning");
   setShuffleControls(false);
-  displayCard(finalCard, { pushHistory: true });
+  displayCard(finalCard, { pushHistory: true, assignee: nextPlayer() });
   els.rouletteResult.textContent = `Roulette picked ${finalCard.set}.`;
   showToast("Roulette card selected");
 }
@@ -456,14 +580,17 @@ function renderFilters() {
   renderFilter(els.setFilters, allSets, state.selectedSets, (value) => {
     toggleSet(state.selectedSets, value);
     renderAll();
+    saveSession();
   });
   renderFilter(els.depthFilters, depths, state.selectedDepths, (value) => {
     toggleSet(state.selectedDepths, value);
     renderAll();
+    saveSession();
   });
   renderFilter(els.categoryFilters, allCategories, state.selectedCategories, (value) => {
     toggleSet(state.selectedCategories, value);
     renderAll();
+    saveSession();
   });
 }
 
@@ -478,6 +605,34 @@ function renderRoulettePacks() {
   );
 }
 
+function renderSessionSetupOptions() {
+  els.sessionMode.replaceChildren(
+    ...modes.map((mode) => {
+      const option = document.createElement("option");
+      option.value = mode.id;
+      option.textContent = mode.name;
+      return option;
+    }),
+  );
+
+  els.sessionPack.replaceChildren(
+    ...[
+      (() => {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Use mode default";
+        return option;
+      })(),
+      ...allSets.map((set) => {
+        const option = document.createElement("option");
+        option.value = set;
+        option.textContent = set;
+        return option;
+      }),
+    ],
+  );
+}
+
 function renderRound() {
   els.modeName.textContent = state.mode.name;
   els.roundCue.textContent = state.mode.sequence?.length
@@ -485,6 +640,22 @@ function renderRound() {
     : "Free draw";
   els.modeNote.textContent = state.mode.note;
   els.roulettePanel.hidden = state.mode.id !== "roulette";
+}
+
+function renderSession() {
+  const playerSummary = state.players.length ? state.players.join(" · ") : "No players yet";
+  els.sessionStatus.textContent = state.players.length ? `${state.mode.name} session` : "Open table";
+  els.sessionPlayersSummary.textContent = playerSummary;
+  els.sessionSafety.textContent =
+    state.selectedDepths.has("High")
+      ? "Deep cards are on. Anyone can pass, pause, or choose a softer card."
+      : "Pass, pause, or choose a softer card at any time.";
+}
+
+function renderTurn() {
+  els.turnPlayer.textContent = state.currentPlayer
+    ? `${state.currentPlayer} answers this card.`
+    : "Set up players to rotate turns.";
 }
 
 function renderHistory() {
@@ -506,6 +677,8 @@ function renderAll() {
   renderModes();
   renderFilters();
   renderRound();
+  renderSession();
+  renderTurn();
   renderStats();
   renderHistory();
 }
@@ -525,6 +698,7 @@ function setMode(mode, { silent = false } = {}) {
   state.selectedDepths = new Set(mode.depths);
   state.sequenceIndex = 0;
   renderAll();
+  saveSession();
   if (!silent) showToast(`${mode.name} mode`);
 }
 
@@ -536,6 +710,41 @@ function startDateMode() {
   const mode = modes.find((item) => item.id === "dates");
   if (mode) setMode(mode);
   scrollToGame();
+}
+
+function startGuidedSession() {
+  const mode = modeById(els.sessionMode.value);
+  state.mode = mode;
+  state.selectedSets = new Set(mode.sets);
+  state.selectedCategories = new Set(mode.categories);
+  state.selectedDepths = new Set(depthRange(els.sessionDepth.value));
+  state.players = parsePlayers(els.sessionPlayers.value);
+  state.playerIndex = 0;
+  state.currentPlayer = "";
+  state.sequenceIndex = 0;
+  state.seen.clear();
+  state.history = [];
+  state.current = null;
+
+  if (els.sessionPack.value) {
+    state.selectedSets = new Set([els.sessionPack.value]);
+    state.selectedCategories = new Set(categoriesForSet(els.sessionPack.value));
+  }
+
+  if (state.mode.id === "roulette") {
+    els.roulettePlayers.value = state.players.length ? state.players.join(", ") : els.sessionPlayers.value;
+    if (els.sessionPack.value) els.roulettePack.value = els.sessionPack.value;
+  }
+
+  renderAll();
+  saveSession();
+  scrollToGame();
+  if (state.mode.id === "roulette") {
+    showReadyCard();
+  } else {
+    drawCard();
+  }
+  showToast("Session started");
 }
 
 async function landingShuffle() {
@@ -555,10 +764,7 @@ function previousCard() {
 }
 
 function getRoulettePlayers() {
-  const players = els.roulettePlayers.value
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
+  const players = parsePlayers(els.roulettePlayers.value);
   return players.length ? players : ["Player 1"];
 }
 
@@ -593,8 +799,30 @@ async function spinBottle() {
   const player = players[chosenIndex];
   els.rouletteWheel.classList.remove("is-spinning");
   setShuffleControls(false);
+  state.currentPlayer = player;
+  renderTurn();
+  saveSession();
   els.rouletteResult.textContent = `${player} answers next from ${set}.`;
   if (card) showToast(`${player} is up`);
+}
+
+function drawSofterCard() {
+  if (state.isShuffling) return;
+  const softPool = activeCards().filter((card) => card.depth === "Low");
+  const fallback = cards.filter((card) => card.depth === "Low");
+  const card = drawFromCards(softPool.length ? softPool : fallback);
+  if (card) showToast("Softer card drawn");
+}
+
+function showFollowUp() {
+  if (!state.current) {
+    showToast("Draw a card first.");
+    return;
+  }
+  const prompt = pickRandom(FOLLOW_UP_PROMPTS);
+  els.turnPlayer.textContent = state.currentPlayer
+    ? `${state.currentPlayer}, follow-up: ${prompt}`
+    : `Follow-up: ${prompt}`;
 }
 
 function resetDeck() {
@@ -602,14 +830,13 @@ function resetDeck() {
   state.history = [];
   state.sequenceIndex = 0;
   state.current = null;
+  state.currentPlayer = "";
+  state.playerIndex = 0;
   window.history.replaceState(null, "", window.location.pathname);
-  els.cardFace.className = "card-face";
-  els.cardCategory.textContent = "Ready";
-  els.cardId.textContent = "SM-300";
-  els.cardPrompt.textContent = "Choose a mode, then draw the first card.";
-  els.cardSet.textContent = "Full Library";
+  showReadyCard();
   els.rouletteResult.textContent = "Add names separated by commas.";
   renderAll();
+  saveSession();
   showToast("Deck reset");
 }
 
@@ -636,7 +863,8 @@ function copyCurrentCard() {
     showToast("Draw a card first.");
     return;
   }
-  copyText(`${state.current.id} · ${state.current.category}\n${state.current.prompt}`, "Card copied");
+  const player = state.currentPlayer ? `${state.currentPlayer} answers\n` : "";
+  copyText(`${player}${state.current.id} · ${state.current.category}\n${state.current.prompt}`, "Card copied");
 }
 
 function copyCurrentLink() {
@@ -667,14 +895,24 @@ els.previousCard.addEventListener("click", previousCard);
 els.resetDeck.addEventListener("click", resetDeck);
 els.copyCard.addEventListener("click", copyCurrentCard);
 els.copyLink.addEventListener("click", copyCurrentLink);
+els.softerCard.addEventListener("click", drawSofterCard);
+els.followUpCard.addEventListener("click", showFollowUp);
 els.spinBottle.addEventListener("click", spinBottle);
+els.startSession.addEventListener("click", startGuidedSession);
+els.roulettePlayers.addEventListener("change", saveSession);
+els.roulettePack.addEventListener("change", saveSession);
 els.startGame?.addEventListener("click", scrollToGame);
 els.randomStart?.addEventListener("click", landingShuffle);
 els.datesStart?.addEventListener("click", startDateMode);
 window.addEventListener("hashchange", loadHashCard);
 
 renderRoulettePacks();
+renderSessionSetupOptions();
+const restored = restoreSession();
 renderAll();
+if (restored && state.current) {
+  displayCard(state.current);
+}
 if (loadHashCard()) {
   scrollToGame();
 }
