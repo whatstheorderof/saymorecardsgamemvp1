@@ -304,6 +304,10 @@ function showToast(message) {
   showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1500);
 }
 
+function trackEvent(name, data = {}) {
+  window.va?.("event", { name, data });
+}
+
 function parsePlayers(value) {
   return value
     .split(",")
@@ -477,6 +481,15 @@ function displayCard(card, { pushHistory = false, assignee } = {}) {
   renderStats();
   renderHistory();
   saveSession();
+  if (pushHistory) {
+    trackEvent("card_drawn", {
+      cardId: card.id,
+      category: card.category,
+      set: card.set,
+      mode: state.mode.name,
+      hasPlayer: Boolean(state.currentPlayer),
+    });
+  }
 }
 
 function sleep(ms) {
@@ -515,6 +528,7 @@ async function shuffleRandomCard() {
 
   setShuffleControls(false);
   displayCard(finalCard, { pushHistory: true, assignee: nextPlayer() });
+  trackEvent("shuffle_card", { mode: state.mode.name });
   showToast("Random card selected");
 }
 
@@ -541,6 +555,7 @@ async function rouletteRandomCard() {
   setShuffleControls(false);
   displayCard(finalCard, { pushHistory: true, assignee: nextPlayer() });
   els.rouletteResult.textContent = `Roulette picked ${finalCard.set}.`;
+  trackEvent("roulette_random", { set: finalCard.set });
   showToast("Roulette card selected");
 }
 
@@ -699,6 +714,7 @@ function setMode(mode, { silent = false } = {}) {
   state.sequenceIndex = 0;
   renderAll();
   saveSession();
+  trackEvent("mode_selected", { mode: mode.name });
   if (!silent) showToast(`${mode.name} mode`);
 }
 
@@ -744,6 +760,12 @@ function startGuidedSession() {
   } else {
     drawCard();
   }
+  trackEvent("session_started", {
+    mode: state.mode.name,
+    players: state.players.length,
+    depth: els.sessionDepth.value,
+    pack: els.sessionPack.value || "mode_default",
+  });
   showToast("Session started");
 }
 
@@ -803,6 +825,11 @@ async function spinBottle() {
   renderTurn();
   saveSession();
   els.rouletteResult.textContent = `${player} answers next from ${set}.`;
+  trackEvent("spin_bottle", {
+    set,
+    players: players.length,
+    hasCard: Boolean(card),
+  });
   if (card) showToast(`${player} is up`);
 }
 
@@ -811,6 +838,7 @@ function drawSofterCard() {
   const softPool = activeCards().filter((card) => card.depth === "Low");
   const fallback = cards.filter((card) => card.depth === "Low");
   const card = drawFromCards(softPool.length ? softPool : fallback);
+  trackEvent("softer_card", { mode: state.mode.name });
   if (card) showToast("Softer card drawn");
 }
 
@@ -823,6 +851,7 @@ function showFollowUp() {
   els.turnPlayer.textContent = state.currentPlayer
     ? `${state.currentPlayer}, follow-up: ${prompt}`
     : `Follow-up: ${prompt}`;
+  trackEvent("follow_up", { mode: state.mode.name });
 }
 
 function resetDeck() {
@@ -865,6 +894,7 @@ function copyCurrentCard() {
   }
   const player = state.currentPlayer ? `${state.currentPlayer} answers\n` : "";
   copyText(`${player}${state.current.id} · ${state.current.category}\n${state.current.prompt}`, "Card copied");
+  trackEvent("copy_card", { cardId: state.current.id, mode: state.mode.name });
 }
 
 function copyCurrentLink() {
@@ -873,6 +903,7 @@ function copyCurrentLink() {
     return;
   }
   copyText(window.location.href, "Link copied");
+  trackEvent("copy_link", { cardId: state.current.id, mode: state.mode.name });
 }
 
 function loadHashCard() {
