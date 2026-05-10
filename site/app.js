@@ -334,6 +334,34 @@ function categoriesForSet(set) {
   return [...new Set(cardsForSet(set).map((card) => card.category))];
 }
 
+function categoriesForSets(sets) {
+  return allCategories.filter((category) => cards.some((card) => sets.has(card.set) && card.category === category));
+}
+
+function setsForCategory(category) {
+  return allSets.filter((set) => cards.some((card) => card.set === set && card.category === category));
+}
+
+function replaceSetValues(set, values) {
+  set.clear();
+  values.forEach((value) => set.add(value));
+}
+
+function chooseSingleFilter(set, value) {
+  if (set.size === 1 && set.has(value)) {
+    return "same";
+  }
+
+  replaceSetValues(set, [value]);
+  return "single";
+}
+
+function keepCategoriesAvailable() {
+  const availableCategories = categoriesForSets(state.selectedSets);
+  const nextCategories = [...state.selectedCategories].filter((category) => availableCategories.includes(category));
+  replaceSetValues(state.selectedCategories, nextCategories.length ? nextCategories : availableCategories);
+}
+
 function saveSession() {
   const payload = {
     modeId: state.mode.id,
@@ -593,7 +621,10 @@ function renderFilter(container, values, selected, onToggle) {
 
 function renderFilters() {
   renderFilter(els.setFilters, allSets, state.selectedSets, (value) => {
-    toggleSet(state.selectedSets, value);
+    const result = chooseSingleFilter(state.selectedSets, value);
+    if (result === "single") {
+      replaceSetValues(state.selectedCategories, categoriesForSet(value));
+    }
     renderAll();
     saveSession();
   });
@@ -602,8 +633,12 @@ function renderFilters() {
     renderAll();
     saveSession();
   });
-  renderFilter(els.categoryFilters, allCategories, state.selectedCategories, (value) => {
-    toggleSet(state.selectedCategories, value);
+  keepCategoriesAvailable();
+  renderFilter(els.categoryFilters, categoriesForSets(state.selectedSets), state.selectedCategories, (value) => {
+    const result = chooseSingleFilter(state.selectedCategories, value);
+    if (result === "single") {
+      replaceSetValues(state.selectedSets, setsForCategory(value));
+    }
     renderAll();
     saveSession();
   });
